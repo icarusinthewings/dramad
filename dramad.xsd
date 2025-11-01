@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+  <!-- ===== Root Document ===== -->
+  <xs:element name="d">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="meta" type="metaType" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="entities" type="entitiesType" minOccurs="1" maxOccurs="1"/>
+        <!-- Acts, chapters, scenes, sections -->
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+          <xs:element name="act" type="containerType"/>
+          <xs:element name="chapter" type="containerType"/>
+          <xs:element name="scene" type="sceneType"/>
+          <xs:element name="sec" type="sectionType"/>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ===== Metadata ===== -->
+  <xs:complexType name="metaType">
+    <xs:sequence>
+      <xs:element name="title" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="author" type="authorType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="an" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="authorType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="role" type="xs:string" use="optional"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- ===== Entities ===== -->
+  <xs:complexType name="entitiesType">
+    <xs:sequence minOccurs="1" maxOccurs="unbounded">
+      <xs:choice>
+        <xs:element name="char" type="namedEntityType"/>
+        <xs:element name="prop" type="namedEntityType"/>
+        <xs:element name="loc" type="namedEntityType"/>
+        <xs:element name="space" type="namedEntityType"/>
+        <xs:element name="grp" type="groupEntityType"/>
+        <xs:element name="entity" type="namedEntityType"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Entities with text content + alias -->
+  <xs:complexType name="namedEntityType">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- Group entity -->
+  <xs:complexType name="groupEntityType">
+    <xs:complexContent>
+      <xs:extension base="namedEntityType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- ===== Line Types ===== -->
+  <xs:complexType name="lineType" mixed="true">
+    <xs:attribute name="by" type="xs:string" use="optional"/>
+    <xs:attribute name="type" type="xs:string" use="optional"/>
+    <xs:attribute name="e" type="xs:string" use="optional"/>
+    <xs:attribute name="id" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <!-- Lyric alias -->
+  <xs:element name="lyr" type="lineType"/>
+
+  <!-- Silence / timing lines -->
+  <xs:complexType name="timedEmptyLineType">
+    <xs:attribute name="length" type="xs:string" use="optional"/>
+    <xs:attribute name="id" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:element name="silence" type="timedEmptyLineType"/>
+  <xs:element name="pause" type="timedEmptyLineType"/>
+  <xs:element name="beat" type="timedEmptyLineType"/>
+  <xs:element name="breath" type="timedEmptyLineType"/>
+  <xs:element name="cue" type="timedEmptyLineType"/>
+
+  <!-- Direction -->
+  <xs:element name="dir" type="xs:string"/>
+
+  <!-- Enter/Exit -->
+  <xs:complexType name="enterExitType">
+    <xs:attribute name="who" type="xs:string" use="required"/>
+    <xs:attribute name="via" type="xs:string" use="optional"/>
+    <xs:attribute name="with" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:element name="enter" type="enterExitType"/>
+  <xs:element name="exit" type="enterExitType"/>
+  <xs:element name="enterExit" type="enterExitType"/>
+
+  <!-- Generic line element -->
+  <xs:element name="ln" type="lineType"/>
+
+  <!-- ===== Scene / Section / Container ===== -->
+
+  <!-- scene: cannot contain scenes -->
+  <xs:complexType name="sceneType">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="sec" type="sectionType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="ln"/>
+        <xs:element ref="lyr"/>
+        <xs:element ref="dir"/>
+        <xs:element ref="enter"/>
+        <xs:element ref="exit"/>
+        <xs:element ref="enterExit"/>
+        <xs:element ref="silence"/>
+        <xs:element ref="pause"/>
+        <xs:element ref="beat"/>
+        <xs:element ref="breath"/>
+        <xs:element ref="cue"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="optional"/>
+    <xs:attribute name="title" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <!-- section: can contain nested sections -->
+  <xs:complexType name="sectionType">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="sec"/>
+        <xs:element ref="ln"/>
+        <xs:element ref="lyr"/>
+        <xs:element ref="dir"/>
+        <xs:element ref="enter"/>
+        <xs:element ref="exit"/>
+        <xs:element ref="enterExit"/>
+        <xs:element ref="silence"/>
+        <xs:element ref="pause"/>
+        <xs:element ref="beat"/>
+        <xs:element ref="breath"/>
+        <xs:element ref="cue"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="title" type="xs:string" use="optional"/>
+    <xs:attribute name="type" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <!-- act/chapter as generic container -->
+  <xs:complexType name="containerType">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:choice>
+        <xs:element name="scene" type="sceneType"/>
+        <xs:element name="sec" type="sectionType"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>
